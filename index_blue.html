@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Light & Energy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #7eb8f7;
+      --gold-light: #b8d9ff;
+      --gold-dim: #4a7ab5;
+      --cream: #e8f0ff;
+      --deep: #03080f;
+    }
+    html, body {
+      height: 100%; background: var(--deep); color: var(--cream);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none;
+    }
+
+    .view { position: fixed; inset: 0; transition: opacity 0.8s ease; }
+    .view.hidden { opacity: 0; pointer-events: none; }
+
+    /* ══ AFFIRMATION VIEW ══ */
+    #view-affirmation { z-index: 10; }
+
+    .bg { position: absolute; inset: 0; }
+    .bg-gradient {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 30%,
+        rgba(10,40,90,.65) 0%, rgba(4,12,28,.92) 60%, var(--deep) 100%);
+    }
+    .warm-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 45% 35% at 50% 48%,
+        rgba(255, 200, 100, 0.055) 0%,
+        rgba(255, 180, 80, 0.02) 40%,
+        transparent 70%);
+    }
+    .bg-noise {
+      position: absolute; inset: 0; opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+    .orb-wrap { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    .orb {
+      width: min(70vw,70vh); height: min(70vw,70vh); border-radius: 50%;
+      background: radial-gradient(circle at 48% 48%,
+        rgba(255,220,140,.08) 0%,
+        rgba(180,210,255,.14) 20%,
+        rgba(60,120,220,.08) 50%,
+        rgba(20,60,140,.03) 70%,
+        transparent 85%);
+      box-shadow: 0 0 60px 30px rgba(255,200,100,.04), 0 0 120px 60px rgba(60,120,255,.07), 0 0 200px 100px rgba(40,80,200,.04);
+      animation: orbPulse 6s ease-in-out infinite;
+    }
+    @keyframes orbPulse { 0%,100%{transform:scale(1);opacity:.7} 50%{transform:scale(1.08);opacity:1} }
+
+    .rays-svg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+    .rays-svg svg { width:min(100vw,100vh); height:min(100vw,100vh); opacity:.07; animation:raysSpin 60s linear infinite; }
+    @keyframes raysSpin { to{transform:rotate(360deg)} }
+
+    #aff-canvas { position:absolute; inset:0; }
+
+    .corner { position:absolute; width:40px; height:40px; opacity:.25; }
+    .corner svg { width:100%; height:100%; }
+    .corner.tl{top:1.5rem;left:1.5rem}
+    .corner.tr{top:1.5rem;right:1.5rem;transform:scaleX(-1)}
+    .corner.bl{bottom:3rem;left:1.5rem;transform:scaleY(-1)}
+    .corner.br{bottom:3rem;right:1.5rem;transform:scale(-1)}
+
+    .stage {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem; text-align: center;
+    }
+    .eyebrow {
+      font-family:'Inter',sans-serif; font-size:clamp(.55rem,1.8vw,.75rem);
+      font-weight:300; letter-spacing:.35em; color:rgba(255,255,255,0.7);
+      text-transform:uppercase; margin-bottom:2.5rem;
+      opacity:0; animation:fadeUp 1.8s ease .3s forwards;
+    }
+    .divider {
+      width:1px; height:48px;
+      background:linear-gradient(to bottom,transparent,rgba(100,160,255,.6),transparent);
+      margin:0 auto 2.5rem; opacity:0; animation:fadeUp 1.8s ease .5s forwards;
+    }
+    .affirmation-box { max-width:min(680px,90vw); min-height:8rem; display:flex; align-items:center; justify-content:center; }
+    #affirmation {
+      font-weight:300; font-style:normal; font-size:clamp(1.4rem,4.5vw,2.4rem);
+      font-style:italic; line-height:1.65; color:#ffffff; letter-spacing:.01em; word-break:keep-all; overflow-wrap:break-word; hyphens:none;
+      transition:opacity 1.2s ease, transform 1.2s ease;
+    }
+    #affirmation.fade-out  { opacity:0; transform:translateY(-12px); }
+    #affirmation.fade-in   { opacity:1; transform:translateY(0); }
+    #affirmation.hidden    { opacity:0; transform:translateY(12px); }
+    .divider2 { width:1px; height:48px; background:linear-gradient(to bottom,transparent,rgba(100,160,255,.6),transparent); margin:2.5rem auto 2rem; opacity:0; animation:fadeUp 1.8s ease .7s forwards; }
+
+    .btn-row { display:flex; gap:1rem; align-items:center; opacity:0; animation:fadeUp 1.8s ease 1s forwards; flex-wrap:wrap; justify-content:center; }
+    .tap-btn {
+      background:none; border:1px solid rgba(255,255,255,.35); color:#ffffff;
+      font-family:'Inter',sans-serif; font-size:clamp(.55rem,1.8vw,.72rem); font-weight:300;
+      letter-spacing:.3em; text-transform:uppercase; padding:.9rem 2.4rem;
+      cursor:pointer; transition:background .4s,border-color .4s,color .4s;
+    }
+    .tap-btn:hover,.tap-btn:active { background:rgba(255,255,255,.1); border-color:#fff; color:#ffffff; }
+    .ar-btn {
+      background:none; border:1px solid rgba(255,255,255,.35); color:#ffffff;
+      font-family:'Inter',sans-serif; font-size:clamp(.55rem,1.8vw,.72rem); font-weight:300;
+      letter-spacing:.2em; text-transform:uppercase; padding:.9rem 1.4rem;
+      cursor:pointer; transition:background .4s,border-color .4s,color .4s;
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .ar-btn:hover,.ar-btn:active { background:rgba(255,255,255,.1); border-color:#fff; color:#ffffff; }
+    .ar-btn svg { width:18px; height:18px; flex-shrink:0; }
+
+    .footer {
+      position:absolute; bottom:env(safe-area-inset-bottom,1.5rem); left:0; right:0;
+      text-align:center; font-family:'Inter',sans-serif; font-size:clamp(.45rem,1.4vw,.6rem);
+      letter-spacing:.25em; color:rgba(255,255,255,0.3); text-transform:uppercase; padding-bottom:1.2rem;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Language selector */
+    .lang-wrap {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      z-index: 200; font-family: 'Inter', sans-serif;
+    }
+    .lang-toggle {
+      background: rgba(3,8,15,0.75); border: 1px solid rgba(126,184,247,.4);
+      color: rgba(255,255,255,.9); font-family: 'Inter', sans-serif;
+      font-size: .7rem; font-weight: 400; letter-spacing: .1em;
+      padding: .5rem .9rem; cursor: pointer;
+      display: flex; align-items: center; gap: .4rem;
+      backdrop-filter: blur(10px); transition: border-color .3s, color .3s;
+      position: relative; z-index: 201;
+    }
+    .lang-toggle:hover { border-color: rgba(126,184,247,.8); color: #fff; }
+    .lang-dropdown {
+      position: absolute; top: calc(100% + .4rem); right: 0;
+      background: rgba(3,8,20,0.96); border: 1px solid rgba(126,184,247,.3);
+      backdrop-filter: blur(16px); min-width: 110px;
+      flex-direction: column;
+      overflow: hidden; z-index: 202;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    }
+    .lang-opt {
+      background: none; border: none; border-bottom: 1px solid rgba(126,184,247,.1);
+      color: rgba(255,255,255,.65); font-family: 'Inter', sans-serif;
+      font-size: .72rem; letter-spacing: .08em;
+      padding: .6rem 1rem; cursor: pointer; text-align: left;
+      transition: background .2s, color .2s; pointer-events: all;
+    }
+    .lang-opt:last-child { border-bottom: none; }
+    .lang-opt:hover { background: rgba(126,184,247,.12); color: #fff; }
+    .lang-opt.lang-active { color: #7eb8f7; }
+
+    .sound-fab {
+      position: absolute; bottom: 2.8rem; left: 50%; transform: translateX(-50%);
+      background: rgba(10,8,6,0.6); border: 1px solid rgba(100,180,255,.35);
+      color: rgba(255,255,255,.7); padding: .7rem 1.4rem;
+      cursor: pointer; backdrop-filter: blur(8px);
+      transition: color .35s, border-color .35s, background .35s;
+      display: flex; align-items: center; gap: .6rem;
+      white-space: nowrap;
+    }
+    .sound-fab:hover, .sound-fab:active { color: #ffffff; border-color: #fff; background: rgba(255,255,255,.08); }
+    .sound-fab.active { color: #ffffff; border-color: rgba(255,255,255,.6); }
+    #sound-label {
+      font-family: 'Inter', sans-serif; font-size: .55rem; letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+
+    /* ══ AR VIEW ══ */
+    #view-ar { z-index: 20; background: #000; }
+
+    #ar-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    #ar-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    .ar-frame { position:absolute; inset:0; pointer-events:none; }
+    .ar-frame svg { width:100%; height:100%; }
+
+    .ar-ui {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 2rem 1.5rem;
+      padding-top: max(2rem, env(safe-area-inset-top));
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    }
+    .ar-top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .ar-label { font-family:'Inter',sans-serif; font-size:.65rem; letter-spacing:.3em; color:rgba(255,255,255,0.7); text-transform:uppercase; }
+    .ar-close-btn {
+      pointer-events:all;
+      background:rgba(0,0,0,.4); border:1px solid rgba(100,180,255,.4);
+      color:#ffffff; font-family:'Inter',sans-serif; font-size:.6rem;
+      letter-spacing:.25em; text-transform:uppercase; padding:.6rem 1.2rem;
+      cursor:pointer; backdrop-filter:blur(6px); transition:background .3s;
+    }
+    .ar-close-btn:hover { background:rgba(100,180,255,.15); }
+    .ar-bottom { display:flex; flex-direction:column; align-items:center; gap:1.2rem; }
+    .ar-hint { font-family:'Inter',sans-serif; font-style:normal; font-size:clamp(.9rem,3vw,1.1rem); color:rgba(255,255,255,0.5); letter-spacing:.05em; text-align:center; }
+    .ar-back-btn {
+      pointer-events: all;
+      background: rgba(0,0,0,.5); border: 1px solid rgba(100,180,255,.5);
+      color: #ffffff; font-family:'Inter',sans-serif; font-size:.65rem;
+      letter-spacing:.25em; text-transform:uppercase; padding:.8rem 2rem;
+      cursor:pointer; backdrop-filter:blur(8px); transition:background .3s, border-color .3s;
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .ar-back-btn:hover,.ar-back-btn:active { background:rgba(255,255,255,.1); border-color:#fff; }
+
+    #ar-permission {
+      position:absolute; inset:0; background:rgba(0,0,0,.92);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:1.5rem; padding:2rem; text-align:center; z-index:5;
+    }
+    #ar-permission.gone { display:none; }
+    .perm-icon { opacity:.6; }
+    .perm-title { font-family:'Inter',sans-serif; font-size:1rem; letter-spacing:.2em; color:#ffffff; }
+    .perm-text { font-size:1rem; color:rgba(255,255,255,0.6); line-height:1.6; max-width:280px; }
+    .perm-btn {
+      background:none; border:1px solid rgba(255,255,255,.5); color:#ffffff;
+      font-family:'Inter',sans-serif; font-size:.65rem; letter-spacing:.3em;
+      text-transform:uppercase; padding:.9rem 2.4rem; cursor:pointer; transition:background .3s;
+    }
+    .perm-btn:hover { background:rgba(100,180,255,.1); }
+    .perm-back {
+      background:none; border:none; color:rgba(255,255,255,.45);
+      font-family:'Inter',sans-serif; font-size:.6rem; letter-spacing:.25em;
+      text-transform:uppercase; cursor:pointer; padding:.4rem 1rem;
+      transition:color .3s;
+    }
+    .perm-back:hover { color:#ffffff; }
+    .perm-err { color:rgba(255,120,80,.8); font-size:.85rem; display:none; }
+  </style>
+</head>
+<body>
+
+<!-- AFFIRMATION VIEW -->
+<div class="view" id="view-affirmation">
+  <div class="bg">
+    <div class="bg-gradient"></div>
+    <div class="warm-glow"></div>
+    <div class="bg-noise"></div>
+    <div class="orb-wrap"><div class="orb"></div></div>
+    <div class="rays-svg"><svg id="rays-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><g id="rays-g" transform="translate(200,200)"></g></svg></div>
+    <canvas id="aff-canvas"></canvas>
+  </div>
+
+  <div class="corner tl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
+  <div class="corner tr"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
+  <!-- Language selector -->
+  <div class="lang-wrap" id="lang-wrap">
+    <button class="lang-toggle" onclick="toggleLangMenu()">
+      <span id="lang-current-flag">🇬🇧</span>
+      <span id="lang-current-label">EN</span>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="lang-dropdown" id="lang-dropdown" style="display:none">
+      <button class="lang-opt lang-active" data-lang="en" onclick="pickLang('en','🇬🇧','EN')">🇬🇧 EN</button>
+      <button class="lang-opt" data-lang="de"  onclick="pickLang('de','🇩🇪','DE')">🇩🇪 DE</button>
+      <button class="lang-opt" data-lang="fr"  onclick="pickLang('fr','🇫🇷','FR')">🇫🇷 FR</button>
+      <button class="lang-opt" data-lang="es"  onclick="pickLang('es','🇪🇸','ES')">🇪🇸 ES</button>
+      <button class="lang-opt" data-lang="it"  onclick="pickLang('it','🇮🇹','IT')">🇮🇹 IT</button>
+      <button class="lang-opt" data-lang="ja"  onclick="pickLang('ja','🇯🇵','JA')">🇯🇵 JA</button>
+      <button class="lang-opt" data-lang="zh"  onclick="pickLang('zh','🇨🇳','ZH')">🇨🇳 ZH</button>
+      <button class="lang-opt" data-lang="el"  onclick="pickLang('el','🇬🇷','EL')">🇬🇷 EL</button>
+    </div>
+  </div>
+  <div class="corner bl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
+
+  <div class="stage">
+    <p class="eyebrow">A message from the light</p>
+    <div class="divider"></div>
+    <div class="affirmation-box">
+      <p id="affirmation" class="hidden"></p>
+    </div>
+    <div class="divider2"></div>
+    <div class="btn-row">
+      <button class="tap-btn" onclick="nextAffirmation()">Receive Another</button>
+      <button class="ar-btn" onclick="openAR()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/>
+          <path d="M4 16v2a2 2 0 0 0 2 2h2"/><path d="M16 20h2a2 2 0 0 0 2-2v-2"/>
+          <circle cx="12" cy="12" r="3" opacity=".6"/>
+          <path d="M12 5v2M12 17v2M5 12h2M17 12h2" opacity=".4"/>
+        </svg>
+        See the Light
+      </button>
+    </div>
+  </div>
+  <div class="footer">© 2026 &nbsp;Digital Bohemians &nbsp;·&nbsp; All rights reserved</div>
+  <button class="sound-fab" id="sound-toggle" onclick="toggleSound()" title="Toggle sound">
+    <svg id="sound-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+    <svg id="sound-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" width="22" height="22" style="display:none">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>
+    <span id="sound-label">tap to sound</span>
+  </button>
+</div>
+
+
+<!-- AR VIEW -->
+<div class="view hidden" id="view-ar">
+  <video id="ar-video" autoplay playsinline muted></video>
+  <canvas id="ar-canvas"></canvas>
+
+  <div class="ar-frame">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 18L5 5L18 5"  stroke="rgba(201,168,76,0.45)" stroke-width=".35" fill="none"/>
+      <path d="M82 5L95 5L95 18" stroke="rgba(201,168,76,0.45)" stroke-width=".35" fill="none"/>
+      <path d="M5 82L5 95L18 95" stroke="rgba(201,168,76,0.45)" stroke-width=".35" fill="none"/>
+      <path d="M95 82L95 95L82 95" stroke="rgba(201,168,76,0.45)" stroke-width=".35" fill="none"/>
+      <circle cx="50" cy="50" r="5" stroke="rgba(201,168,76,0.2)" stroke-width=".25" fill="none"/>
+      <line x1="50" y1="44" x2="50" y2="41" stroke="rgba(201,168,76,0.2)" stroke-width=".2"/>
+      <line x1="50" y1="56" x2="50" y2="59" stroke="rgba(201,168,76,0.2)" stroke-width=".2"/>
+      <line x1="44" y1="50" x2="41" y2="50" stroke="rgba(201,168,76,0.2)" stroke-width=".2"/>
+      <line x1="56" y1="50" x2="59" y2="50" stroke="rgba(201,168,76,0.2)" stroke-width=".2"/>
+    </svg>
+  </div>
+
+  <div id="ar-permission">
+    <div class="perm-icon">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.8)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
+    <p class="perm-title">Open the Vision</p>
+    <p class="perm-text">Allow camera access to see light and energy flowing around the sculpture.</p>
+    <button class="perm-btn" onclick="startCamera()">Allow Camera</button>
+    <button class="perm-back" onclick="closeAR()">← Back</button>
+    <p class="perm-err" id="perm-err">Camera access was denied. Please allow it in your browser settings.</p>
+  </div>
+
+  <div class="ar-ui">
+    <div class="ar-top">
+      <span class="ar-label">Light Vision</span>
+      <button class="ar-close-btn" onclick="closeAR()">✕ &nbsp;Close</button>
+    </div>
+    <div class="ar-bottom">
+      <p class="ar-hint">Point toward the sculpture</p>
+      <button class="ar-back-btn" onclick="closeAR()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Affirmations
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ══ AFFIRMATIONS ══ */
+/* ══ LANGUAGE DATA ══ */
+const LANGS = {
+  en: {
+    flag: '🇬🇧', label: 'EN',
+    eyebrow: 'A message from the light',
+    btn: 'Receive Another',
+    arBtn: 'See the Light',
+    arLabel: 'Light Vision',
+    arHint: 'Point toward the sculpture',
+    arBack: 'Back to Affirmations',
+    soundOn: 'sound on', soundOff: 'sound off', soundTap: 'tap to sound',
+    permTitle: 'Open the Vision',
+    permText: 'Allow camera access to see light and energy flowing around the sculpture.',
+    permBtn: 'Allow Camera',
+    permErr: 'Camera access was denied. Please allow it in your browser settings.',
+    affirmations: [
+      "You are made of the same energy that ignites the stars.",
+      "Light moves through you — you are never separate from it.",
+      "Every breath you take is the universe knowing itself.",
+      "You carry within you an ancient, unbreakable radiance.",
+      "You are allowed to take up space, to shine, to expand.",
+      "The energy that created worlds also created you.",
+      "You are a convergence of light that has always been.",
+      "Your presence alone changes the frequency of a room.",
+      "You are worthy — not because of what you do, but because you exist.",
+      "There is a stillness at your core that nothing can disturb.",
+      "You are not separate from the sacred. You are the sacred.",
+      "Your light does not compete — it simply illuminates.",
+      "Everything you need is already alive within you.",
+      "You are held by something far greater than fear.",
+      "Let yourself be moved. Let yourself be light.",
+      "The universe has never made anything quite like you.",
+      "You are energy in its most beautiful, conscious form.",
+      "In this moment, you are exactly where you are meant to be.",
+      "Your softness is not weakness. It is how light enters.",
+      "You are the beginning and the returning — always whole.",
+    ]
+  },
+  de: {
+    flag: '🇩🇪', label: 'DE',
+    eyebrow: 'Eine Botschaft des Lichts',
+    btn: 'Nächste Botschaft',
+    arBtn: 'Das Licht sehen',
+    arLabel: 'Lichtvision',
+    arHint: 'Auf die Skulptur richten',
+    arBack: 'Zurück zu den Affirmationen',
+    soundOn: 'Ton an', soundOff: 'Ton aus', soundTap: 'Tippen für Ton',
+    permTitle: 'Vision öffnen',
+    permText: 'Kamerazugriff erlauben, um Licht und Energie um die Skulptur zu sehen.',
+    permBtn: 'Kamera erlauben',
+    permErr: 'Kamerazugriff verweigert. Bitte in den Browser-Einstellungen erlauben.',
+    affirmations: [
+      "Du bestehst aus derselben Energie, die Sterne entfacht.",
+      "Licht fließt durch dich — du bist niemals davon getrennt.",
+      "Jeder Atemzug ist das Universum, das sich selbst erkennt.",
+      "In dir trägt sich ein uralter, unzerstörbarer Glanz.",
+      "Du darfst Raum einnehmen, leuchten, dich entfalten.",
+      "Die Energie, die Welten erschuf, erschuf auch dich.",
+      "Du bist ein Zusammentreffen von Licht, das immer war.",
+      "Deine Gegenwart allein verändert die Schwingung eines Raumes.",
+      "Du bist würdig — nicht wegen dem, was du tust, sondern weil du existierst.",
+      "In deinem Kern liegt eine Stille, die nichts erschüttern kann.",
+      "Du bist nicht vom Heiligen getrennt. Du bist das Heilige.",
+      "Dein Licht konkurriert nicht — es erleuchtet einfach.",
+      "Alles, was du brauchst, lebt bereits in dir.",
+      "Du wirst von etwas getragen, das weit größer ist als Angst.",
+      "Lass dich bewegen. Lass dich Licht sein.",
+      "Das Universum hat nie etwas ganz wie dich erschaffen.",
+      "Du bist Energie in ihrer schönsten, bewussten Form.",
+      "In diesem Moment bist du genau dort, wo du sein sollst.",
+      "Deine Sanftheit ist keine Schwäche. So tritt Licht ein.",
+      "Du bist der Anfang und die Rückkehr — immer ganz.",
+    ]
+  },
+  fr: {
+    flag: '🇫🇷', label: 'FR',
+    eyebrow: 'Un message de la lumière',
+    btn: 'Recevoir une autre',
+    arBtn: 'Voir la lumière',
+    arLabel: 'Vision lumineuse',
+    arHint: 'Pointer vers la sculpture',
+    arBack: 'Retour aux affirmations',
+    soundOn: 'son activé', soundOff: 'son désactivé', soundTap: 'toucher pour le son',
+    permTitle: 'Ouvrir la vision',
+    permText: "Autoriser l'accès à la caméra pour voir la lumière et l'énergie autour de la sculpture.",
+    permBtn: 'Autoriser la caméra',
+    permErr: "Accès à la caméra refusé. Veuillez l'autoriser dans les paramètres du navigateur.",
+    affirmations: [
+      "Tu es fait de la même énergie qui allume les étoiles.",
+      "La lumière traverse ton être — tu n'en es jamais séparé.",
+      "Chaque souffle que tu prends est l'univers se connaissant.",
+      "Tu portes en toi une radiance ancienne et indestructible.",
+      "Tu as le droit de prendre de la place, de briller, de t'épanouir.",
+      "L'énergie qui a créé les mondes t'a aussi créé.",
+      "Tu es une convergence de lumière qui a toujours été.",
+      "Ta seule présence change la fréquence d'une pièce.",
+      "Tu es digne — non pour ce que tu fais, mais parce que tu existes.",
+      "Il y a une immobilité au cœur de toi que rien ne peut troubler.",
+      "Tu n'es pas séparé du sacré. Tu es le sacré.",
+      "Ta lumière ne rivalise pas — elle illumine simplement.",
+      "Tout ce dont tu as besoin est déjà vivant en toi.",
+      "Tu es porté par quelque chose de bien plus grand que la peur.",
+      "Laisse-toi émouvoir. Laisse-toi être lumière.",
+      "L'univers n'a jamais rien créé tout à fait comme toi.",
+      "Tu es l'énergie dans sa forme la plus belle et consciente.",
+      "En ce moment, tu es exactement là où tu dois être.",
+      "Ta douceur n'est pas une faiblesse. C'est ainsi que la lumière entre.",
+      "Tu es le commencement et le retour — toujours entier.",
+    ]
+  },
+  es: {
+    flag: '🇪🇸', label: 'ES',
+    eyebrow: 'Un mensaje de la luz',
+    btn: 'Recibir otra',
+    arBtn: 'Ver la luz',
+    arLabel: 'Visión de luz',
+    arHint: 'Apuntar hacia la escultura',
+    arBack: 'Volver a las afirmaciones',
+    soundOn: 'sonido activado', soundOff: 'sonido desactivado', soundTap: 'toca para sonido',
+    permTitle: 'Abrir la visión',
+    permText: 'Permite el acceso a la cámara para ver la luz y la energía fluyendo alrededor de la escultura.',
+    permBtn: 'Permitir cámara',
+    permErr: 'Acceso a la cámara denegado. Permítelo en la configuración del navegador.',
+    affirmations: [
+      "Estás hecho de la misma energía que enciende las estrellas.",
+      "La luz fluye a través de ti — nunca estás separado de ella.",
+      "Cada respiración es el universo conociéndose a sí mismo.",
+      "Llevas dentro una radiance antigua e inquebrantable.",
+      "Tienes derecho a ocupar espacio, brillar y expandirte.",
+      "La energía que creó mundos también te creó a ti.",
+      "Eres una convergencia de luz que siempre ha existido.",
+      "Tu sola presencia cambia la frecuencia de una habitación.",
+      "Eres digno — no por lo que haces, sino porque existes.",
+      "Hay una quietud en tu núcleo que nada puede perturbar.",
+      "No estás separado de lo sagrado. Tú eres lo sagrado.",
+      "Tu luz no compite — simplemente ilumina.",
+      "Todo lo que necesitas ya está vivo dentro de ti.",
+      "Estás sostenido por algo mucho más grande que el miedo.",
+      "Déjate conmover. Déjate ser luz.",
+      "El universo nunca ha creado nada exactamente como tú.",
+      "Eres energía en su forma más bella y consciente.",
+      "En este momento, estás exactamente donde debes estar.",
+      "Tu suavidad no es debilidad. Así es como entra la luz.",
+      "Eres el principio y el regreso — siempre completo.",
+    ]
+  },
+  it: {
+    flag: '🇮🇹', label: 'IT',
+    eyebrow: 'Un messaggio dalla luce',
+    btn: 'Ricevere un altro',
+    arBtn: 'Vedere la luce',
+    arLabel: 'Visione luminosa',
+    arHint: 'Punta verso la scultura',
+    arBack: 'Torna alle affermazioni',
+    soundOn: 'suono attivo', soundOff: 'suono disattivo', soundTap: 'tocca per il suono',
+    permTitle: 'Apri la visione',
+    permText: "Consenti l'accesso alla fotocamera per vedere luce ed energia fluire attorno alla scultura.",
+    permBtn: 'Consenti fotocamera',
+    permErr: "Accesso alla fotocamera negato. Consentilo nelle impostazioni del browser.",
+    affirmations: [
+      "Sei fatto della stessa energia che accende le stelle.",
+      "La luce scorre attraverso di te — non ne sei mai separato.",
+      "Ogni respiro è l'universo che conosce se stesso.",
+      "Porti in te una radiance antica e indistruttibile.",
+      "Hai il diritto di occupare spazio, brillare, espanderti.",
+      "L'energia che ha creato i mondi ha creato anche te.",
+      "Sei una convergenza di luce che è sempre esistita.",
+      "La tua sola presenza cambia la frequenza di una stanza.",
+      "Sei degno — non per quello che fai, ma perché esisti.",
+      "C'è una quiete nel tuo nucleo che nulla può turbare.",
+      "Non sei separato dal sacro. Tu sei il sacro.",
+      "La tua luce non compete — illumina semplicemente.",
+      "Tutto ciò di cui hai bisogno è già vivo dentro di te.",
+      "Sei sostenuto da qualcosa di molto più grande della paura.",
+      "Lasciati commuovere. Lasciati essere luce.",
+      "L'universo non ha mai creato niente di simile a te.",
+      "Sei energia nella sua forma più bella e consapevole.",
+      "In questo momento, sei esattamente dove devi essere.",
+      "La tua dolcezza non è debolezza. È così che entra la luce.",
+      "Sei l'inizio e il ritorno — sempre intero.",
+    ]
+  },
+  ja: {
+    flag: '🇯🇵', label: 'JA',
+    eyebrow: '光からのメッセージ',
+    btn: '次のメッセージ',
+    arBtn: '光を見る',
+    arLabel: '光のビジョン',
+    arHint: '彫刻に向けてください',
+    arBack: 'アファメーションに戻る',
+    soundOn: '音オン', soundOff: '音オフ', soundTap: 'タップして音を聴く',
+    permTitle: 'ビジョンを開く',
+    permText: '彫刻の周りに流れる光とエネルギーを見るためにカメラへのアクセスを許可してください。',
+    permBtn: 'カメラを許可',
+    permErr: 'カメラへのアクセスが拒否されました。ブラウザの設定で許可してください。',
+    affirmations: [
+      "あなたは星を輝かせるエネルギーと同じものでできています。",
+      "光はあなたを通り抜けています — あなたはそれから切り離されることはありません。",
+      "あなたのすべての呼吸は、宇宙が自分自身を知ることです。",
+      "あなたの中には古く、壊れることのない輝きが宿っています。",
+      "あなたはスペースを取り、輝き、広がることが許されています。",
+      "世界を創ったエネルギーがあなたも創りました。",
+      "あなたはずっと存在してきた光の集まりです。",
+      "あなたの存在だけで、部屋の波動が変わります。",
+      "あなたは価値があります — 何をするかではなく、存在するだけで。",
+      "あなたの核心には、何も揺るがすことのできない静けさがあります。",
+      "あなたは聖なるものから切り離されていません。あなたが聖なるものです。",
+      "あなたの光は競いません — ただ照らすだけです。",
+      "あなたに必要なものはすべて、すでにあなたの中に生きています。",
+      "あなたは恐れよりもはるかに大きな何かに支えられています。",
+      "感動しましょう。光になりましょう。",
+      "宇宙はあなたのようなものを作ったことがありません。",
+      "あなたは最も美しく意識的な形のエネルギーです。",
+      "今この瞬間、あなたはいるべき場所にいます。",
+      "あなたの柔らかさは弱さではありません。それが光の入り口です。",
+      "あなたは始まりであり帰還です — 常に完全です。",
+    ]
+  },
+  zh: {
+    flag: '🇨🇳', label: 'ZH',
+    eyebrow: '来自光的信息',
+    btn: '接收另一条',
+    arBtn: '看见光',
+    arLabel: '光之视界',
+    arHint: '将镜头对准雕塑',
+    arBack: '返回肯定语',
+    soundOn: '声音开', soundOff: '声音关', soundTap: '点击开启声音',
+    permTitle: '开启视界',
+    permText: '允许访问摄像头，看见流动在雕塑周围的光与能量。',
+    permBtn: '允许摄像头',
+    permErr: '摄像头访问被拒绝。请在浏览器设置中允许。',
+    affirmations: [
+      "你由点燃星辰的同一能量构成。",
+      "光流经你——你从未与它分离。",
+      "你的每一次呼吸，都是宇宙认识自己。",
+      "你内心承载着古老而不可摧毁的光辉。",
+      "你被允许占据空间、发光、扩展。",
+      "创造世界的能量也创造了你。",
+      "你是一直存在着的光的汇聚。",
+      "你的存在本身就改变了房间的频率。",
+      "你是值得的——不因为你做了什么，而是因为你存在。",
+      "你的核心有一种宁静，任何事物都无法扰动。",
+      "你并不与神圣分离。你就是神圣。",
+      "你的光不与任何人竞争——它只是照耀。",
+      "你所需要的一切，已经在你内心活着。",
+      "你被远比恐惧更伟大的力量所托举。",
+      "让自己被感动。让自己成为光。",
+      "宇宙从未创造过与你完全相同的存在。",
+      "你是能量最美丽、最有意识的形态。",
+      "此刻，你正身处你应在之处。",
+      "你的柔软不是软弱。那是光进入的方式。",
+      "你是开始，也是归来——永远完整。",
+    ]
+  },
+  el: {
+    flag: '🇬🇷', label: 'EL',
+    eyebrow: 'Ένα μήνυμα από το φως',
+    btn: 'Λάβε άλλο μήνυμα',
+    arBtn: 'Δες το φως',
+    arLabel: 'Οπτασία φωτός',
+    arHint: 'Στρέψε προς το γλυπτό',
+    arBack: 'Πίσω στις επιβεβαιώσεις',
+    soundOn: 'ήχος ενεργός', soundOff: 'ήχος ανενεργός', soundTap: 'πάτα για ήχο',
+    permTitle: 'Άνοιξε την οπτασία',
+    permText: 'Επίτρεψε πρόσβαση στην κάμερα για να δεις το φως και την ενέργεια γύρω από το γλυπτό.',
+    permBtn: 'Επίτρεψε κάμερα',
+    permErr: 'Η πρόσβαση στην κάμερα απορρίφθηκε. Επίτρεψέ την στις ρυθμίσεις του browser.',
+    affirmations: [
+      "Είσαι φτιαγμένος από την ίδια ενέργεια που ανάβει τα άστρα.",
+      "Το φως διαπερνά την ύπαρξή σου — δεν χωρίζεσαι ποτέ από αυτό.",
+      "Κάθε ανάσα σου είναι το σύμπαν να γνωρίζει τον εαυτό του.",
+      "Μέσα σου υπάρχει μια αρχαία, αδάμαστη λάμψη.",
+      "Έχεις δικαίωμα να παίρνεις χώρο, να λάμπεις, να επεκτείνεσαι.",
+      "Η ενέργεια που δημιούργησε κόσμους δημιούργησε κι εσένα.",
+      "Είσαι μια σύγκλιση φωτός που πάντα υπήρχε.",
+      "Η παρουσία σου μόνο αλλάζει τη συχνότητα ενός δωματίου.",
+      "Αξίζεις — όχι για αυτό που κάνεις, αλλά επειδή υπάρχεις.",
+      "Υπάρχει μια γαλήνη στον πυρήνα σου που τίποτα δεν μπορεί να διαταράξει.",
+      "Δεν είσαι χωριστός από το ιερό. Εσύ είσαι το ιερό.",
+      "Το φως σου δεν ανταγωνίζεται — απλώς φωτίζει.",
+      "Όλα όσα χρειάζεσαι ζουν ήδη μέσα σου.",
+      "Σε κρατά κάτι πολύ μεγαλύτερο από τον φόβο.",
+      "Άσε τον εαυτό σου να συγκινηθεί. Να γίνεις φως.",
+      "Το σύμπαν δεν έχει δημιουργήσει ποτέ κάτι ακριβώς σαν εσένα.",
+      "Είσαι ενέργεια στην πιο όμορφη, συνειδητή της μορφή.",
+      "Αυτή τη στιγμή, βρίσκεσαι ακριβώς εκεί που πρέπει.",
+      "Η απαλότητά σου δεν είναι αδυναμία. Έτσι μπαίνει το φως.",
+      "Είσαι η αρχή και η επιστροφή — πάντα ολόκληρος.",
+    ]
+  },
+};
+
+let currentLang = 'en';
+
+let langMenuOpen = false;
+function toggleLangMenu() {
+  langMenuOpen = !langMenuOpen;
+  document.getElementById('lang-dropdown').style.display = langMenuOpen ? 'flex' : 'none';
+}
+function pickLang(code, flag, label) {
+  document.getElementById('lang-current-flag').textContent = flag;
+  document.getElementById('lang-current-label').textContent = label;
+  langMenuOpen = false;
+  setLang(code);
+}
+// Close menu when tapping outside
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('lang-wrap').contains(e.target)) {
+    langMenuOpen = false;
+    document.getElementById('lang-dropdown').style.display = 'none';
+  }
+});
+
+function setLang(code) {
+  currentLang = code;
+  const L = LANGS[code];
+
+  // Update all UI text
+  document.querySelector('.eyebrow').textContent = L.eyebrow;
+  document.querySelector('.tap-btn').textContent = L.btn;
+  document.querySelector('.ar-label').textContent = L.arLabel;
+  document.querySelector('.ar-hint').textContent = L.arHint;
+  document.querySelector('.perm-title').textContent = L.permTitle;
+  document.querySelector('.perm-text').textContent = L.permText;
+  document.querySelector('.perm-btn').textContent = L.permBtn;
+  document.querySelector('.ar-back-btn').innerHTML =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg> ${L.arBack}`;
+
+  // AR button label
+  document.querySelector('.ar-btn').innerHTML =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M4 8V6a2 2 0 0 1 2-2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M4 16v2a2 2 0 0 0 2 2h2"/><path d="M16 20h2a2 2 0 0 0 2-2v-2"/><circle cx="12" cy="12" r="3" opacity=".6"/><path d="M12 5v2M12 17v2M5 12h2M17 12h2" opacity=".4"/></svg> ${L.arBtn}`;
+
+  // Sound button label
+  const lbl = document.getElementById('sound-label');
+  if (lbl) lbl.textContent = soundEnabled ? L.soundOn : L.soundOff;
+
+  // Highlight active lang button
+  document.querySelectorAll('.lang-opt').forEach(b => {
+    b.classList.toggle('lang-active', b.dataset.lang === code);
+  });
+
+  // Close dropdown
+  document.getElementById('lang-dropdown').style.display = 'none';
+
+  // Show new affirmation in new language
+  lastAffIdx = -1;
+  nextAffirmation(true);
+}
+
+let lastAffIdx = -1;
+function getRandom() {
+  const aff = LANGS[currentLang].affirmations;
+  let i; do { i = Math.floor(Math.random() * aff.length); } while (i === lastAffIdx);
+  lastAffIdx = i; return aff[i];
+}
+function nextAffirmation(silent) {
+  const el = document.getElementById('affirmation');
+  const text = getRandom();
+  if (el.classList.contains('hidden')) {
+    el.textContent = text; el.classList.remove('hidden');
+    requestAnimationFrame(() => el.classList.add('fade-in'));
+  } else {
+    el.classList.add('fade-out');
+    setTimeout(() => {
+      el.textContent = text; el.classList.remove('fade-out','fade-in');
+      void el.offsetWidth; el.classList.add('fade-in');
+    }, 1200);
+  }
+}
+setTimeout(() => nextAffirmation(true), 1600);
+
+/* Rays */
+const rg = document.getElementById('rays-g');
+for (let i = 0; i < 24; i++) {
+  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1','0'); l.setAttribute('y1','0');
+  l.setAttribute('x2','0'); l.setAttribute('y2','-195');
+  l.setAttribute('stroke','#7eb8f7');
+  l.setAttribute('stroke-width', i%3===0?'1.5':'0.7');
+  l.setAttribute('transform',`rotate(${(360/24)*i})`);
+  rg.appendChild(l);
+}
+
+/* Affirmation bg particles — bidirectional */
+(function(){
+  const canvas = document.getElementById('aff-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+
+  function mkP(dirOverride){
+    const cx=W/2, cy=H*.48, sp=Math.min(W,H)*.28;
+    // dir: 1 = up, -1 = down
+    const dir = dirOverride !== undefined ? dirOverride : (Math.random() < 0.5 ? 1 : -1);
+    return {
+      x: cx+(Math.random()-.5)*sp*2,
+      y: cy+(Math.random()-.5)*sp,
+      r: Math.random()*1.8+.3,
+      speed: Math.random()*.45+.08,
+      dir: dir,
+      alpha: 0,
+      maxAlpha: Math.random()*.7+.15,
+      life: 0,
+      maxLife: Math.random()*320+140,
+      dx: (Math.random()-.5)*.25
+    };
+  }
+
+  // Seed half up, half down
+  for(let i=0;i<80;i++){
+    const p=mkP(i < 40 ? 1 : -1);
+    p.life=Math.random()*p.maxLife;
+    pts.push(p);
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach((p,i)=>{
+      p.life++;
+      p.x += p.dx;
+      p.y -= p.speed * p.dir;  // dir: +1 up, -1 down
+      const t=p.life/p.maxLife;
+      p.alpha=t<.15?(t/.15)*p.maxAlpha:t>.75?((1-t)/.25)*p.maxAlpha:p.maxAlpha;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,220,255,${p.alpha})`; ctx.fill();
+      // Out of bounds or life ended — respawn same direction
+      if(p.life>=p.maxLife || p.y < -20 || p.y > H+20) pts[i]=mkP(p.dir);
+    });
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+
+/* ══ AUDIO ENGINE ══ */
+let soundEnabled = true;
+let audioUnlocked = false;
+const audio = new Audio('DigitalWave.mp3');
+audio.loop = true;
+audio.volume = 0.7;
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('sound-toggle');
+  document.getElementById('sound-icon-on').style.display  = soundEnabled ? 'block' : 'none';
+  document.getElementById('sound-icon-off').style.display = soundEnabled ? 'none'  : 'block';
+  document.getElementById('sound-label').textContent = soundEnabled ? 'sound on' : 'sound off';
+  btn.classList.toggle('active', soundEnabled);
+  if (!soundEnabled) {
+    audio.pause();
+  } else {
+    audio.play().catch(e => console.warn('Audio play error:', e));
+  }
+}
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  if (soundEnabled) {
+    audio.play().then(() => {
+      document.getElementById('sound-label').textContent = 'sound on';
+      document.getElementById('sound-toggle').classList.add('active');
+    }).catch(e => console.warn('Audio unlock error:', e));
+  }
+  document.removeEventListener('touchstart', unlockAudio);
+  document.removeEventListener('click', unlockAudio);
+}
+document.addEventListener('touchstart', unlockAudio, { once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
+// Kept for compatibility — AR open/close just let the same audio keep playing
+function startHeartbeat() {}
+function stopHeartbeat() {}
+function stopGongLoop() {}
+
+/* ══ AR MODE ══ */
+let arStream = null;
+let arAnimId = null;
+
+function openAR() {
+  document.getElementById('view-affirmation').classList.add('hidden');
+  document.getElementById('view-ar').classList.remove('hidden');
+  startHeartbeat();
+}
+
+function closeAR() {
+  document.getElementById('view-ar').classList.add('hidden');
+  document.getElementById('view-affirmation').classList.remove('hidden');
+  if (arStream) { arStream.getTracks().forEach(t => t.stop()); arStream = null; }
+  if (arAnimId) { cancelAnimationFrame(arAnimId); arAnimId = null; }
+  stopHeartbeat();
+}
+
+async function startCamera() {
+  document.getElementById('perm-err').style.display = 'none';
+  const attempts = [
+    { video: { facingMode: { ideal: 'environment' }, width:{ideal:1920}, height:{ideal:1080} }, audio: false },
+    { video: { facingMode: 'user' }, audio: false },
+    { video: true, audio: false },
+  ];
+  for (const c of attempts) {
+    try {
+      arStream = await navigator.mediaDevices.getUserMedia(c);
+      const video = document.getElementById('ar-video');
+      video.srcObject = arStream;
+      await video.play();
+      document.getElementById('ar-permission').classList.add('gone');
+      initARCanvas();
+      return;
+    } catch(e) { /* try next */ }
+  }
+  const err = document.getElementById('perm-err');
+  err.textContent = 'Camera access was denied. Please allow it in your browser settings.';
+  err.style.display = 'block';
+}
+
+function initARCanvas() {
+  const canvas = document.getElementById('ar-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  window.addEventListener('resize', resize); resize();
+
+  const G  = (a) => `rgba(140,195,255,${a})`;
+  const WH = (a) => `rgba(200,230,255,${a})`;
+
+  /* ── Floating particles ── */
+  const particles = [];
+  function mkParticle() {
+    const spread = Math.random();
+    const x = spread < .7
+      ? W*.5 + (Math.random()-.5)*W*.55
+      : Math.random()*W;
+    const y = spread < .7
+      ? H*.55 + (Math.random()-.5)*H*.45
+      : Math.random()*H;
+    return {
+      x, y,
+      r: Math.random()*2.2+.4,
+      vy: -(Math.random()*.5+.08),
+      vx: (Math.random()-.5)*.2,
+      life: 0,
+      maxLife: Math.random()*440+180,
+      maxAlpha: Math.random()*.75+.12,
+      alpha: 0,
+      star: Math.random() < .22,
+      twinkle: Math.random()*Math.PI*2,
+    };
+  }
+  for (let i=0;i<100;i++){const p=mkParticle();p.life=Math.random()*p.maxLife;particles.push(p);}
+
+  /* ── Pulsing rings ── */
+  const rings = [];
+  function mkRing() {
+    return {
+      x: W*.3 + Math.random()*W*.4,
+      y: H*.25 + Math.random()*H*.45,
+      r: 0,
+      targetR: Math.random()*Math.min(W,H)*.2 + 28,
+      speed: Math.random()*.35+.12,
+      alpha: 0,
+      phase: 'grow',
+      holdT: 0,
+      maxHold: Math.random()*90+40,
+      thick: Math.random()*1.1+.3,
+    };
+  }
+  for(let i=0;i<7;i++){const r=mkRing();r.r=r.targetR*Math.random()*.9;rings.push(r);}
+
+  /* ── Light streaks ── */
+  const streaks = [];
+  function mkStreak() {
+    const angle = Math.random()*Math.PI*2;
+    return {
+      cx: W*.28+Math.random()*W*.44,
+      cy: H*.22+Math.random()*H*.54,
+      angle,
+      len: Math.random()*130+35,
+      life: 0,
+      maxLife: Math.random()*200+70,
+      maxAlpha: Math.random()*.5+.08,
+      alpha: 0,
+      width: Math.random()*1.4+.25,
+      drift: (Math.random()-.5)*.003,
+    };
+  }
+  for(let i=0;i<14;i++){const s=mkStreak();s.life=Math.random()*s.maxLife;streaks.push(s);}
+
+  function drawStar(x, y, r, a) {
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = G(1);
+    ctx.lineWidth = .5;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = G(.6);
+    ctx.translate(x, y);
+    for(let i=0;i<4;i++){
+      ctx.beginPath(); ctx.moveTo(0,-r*1.7); ctx.lineTo(0,r*1.7); ctx.stroke();
+      ctx.rotate(Math.PI/4);
+    }
+    ctx.restore();
+  }
+
+  function loop() {
+    if (canvas.offsetWidth !== W || canvas.offsetHeight !== H) resize();
+    ctx.clearRect(0, 0, W, H);
+
+    /* Rings */
+    rings.forEach((rr, i) => {
+      if (rr.phase === 'grow') {
+        rr.r += rr.speed;
+        rr.alpha = Math.min(rr.alpha + .010, .52);
+        if (rr.r >= rr.targetR) rr.phase = 'hold';
+      } else if (rr.phase === 'hold') {
+        rr.holdT++;
+        if (rr.holdT >= rr.maxHold) rr.phase = 'fade';
+      } else {
+        rr.alpha -= .005;
+        rr.r += rr.speed * .35;
+        if (rr.alpha <= 0) rings[i] = mkRing();
+      }
+      ctx.save();
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = G(.35);
+      ctx.beginPath();
+      ctx.arc(rr.x, rr.y, rr.r, 0, Math.PI*2);
+      ctx.strokeStyle = G(rr.alpha);
+      ctx.lineWidth = rr.thick * 1.8;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(rr.x, rr.y, rr.r*1.05, 0, Math.PI*2);
+      ctx.strokeStyle = WH(rr.alpha * .28);
+      ctx.lineWidth = rr.thick * .5;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    /* Streaks */
+    streaks.forEach((s, i) => {
+      s.life++; s.angle += s.drift;
+      const tt = s.life / s.maxLife;
+      s.alpha = tt < .15 ? (tt/.15)*s.maxAlpha
+              : tt > .7  ? ((1-tt)/.3)*s.maxAlpha
+              : s.maxAlpha;
+      const cos=Math.cos(s.angle), sin=Math.sin(s.angle);
+      const x1=s.cx-cos*(s.len/2), y1=s.cy-sin*(s.len/2);
+      const x2=s.cx+cos*(s.len/2), y2=s.cy+sin*(s.len/2);
+      const grad = ctx.createLinearGradient(x1,y1,x2,y2);
+      grad.addColorStop(0,   G(0));
+      grad.addColorStop(.2,  G(s.alpha));
+      grad.addColorStop(.5,  WH(s.alpha*.75));
+      grad.addColorStop(.8,  G(s.alpha));
+      grad.addColorStop(1,   G(0));
+      ctx.save();
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = G(.4);
+      ctx.beginPath();
+      ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = s.width*2.2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.restore();
+      if (s.life >= s.maxLife) streaks[i] = mkStreak();
+    });
+
+    /* Particles */
+    particles.forEach((p, i) => {
+      p.life++; p.x+=p.vx; p.y+=p.vy;
+      p.twinkle += .035;
+      const tr = p.life/p.maxLife;
+      p.alpha = tr<.12?(tr/.12)*p.maxAlpha : tr>.78?((1-tr)/.22)*p.maxAlpha : p.maxAlpha;
+      const ta = p.alpha * (.7 + .3*Math.sin(p.twinkle));
+      if (p.star && p.r > 1.2) {
+        drawStar(p.x, p.y, p.r*.7, ta*.85);
+      } else {
+        ctx.save();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = G(.5);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = G(ta);
+        ctx.fill();
+        if (p.r > 1.3) {
+          ctx.beginPath();
+          ctx.arc(p.x-.3, p.y-.3, p.r*.3, 0, Math.PI*2);
+          ctx.fillStyle = WH(ta*.55);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      if (p.life >= p.maxLife || p.y < -20) particles[i] = mkParticle();
+    });
+
+    arAnimId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+</script>
+</body>
+</html>
