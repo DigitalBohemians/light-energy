@@ -1,2 +1,2 @@
 # light-energy
-Tiny App
+Tap your phone to the pupile. Then the App should open.
