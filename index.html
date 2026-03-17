@@ -132,11 +132,12 @@
     .lang-toggle {
       background: rgba(3,8,15,0.75); border: 1px solid rgba(126,184,247,.4);
       color: rgba(255,255,255,.9); font-family: 'Inter', sans-serif;
-      font-size: .7rem; font-weight: 400; letter-spacing: .1em;
-      padding: .5rem .9rem; cursor: pointer;
-      display: flex; align-items: center; gap: .4rem;
+      font-size: .75rem; font-weight: 500; letter-spacing: .1em;
+      padding: .7rem 1.1rem; cursor: pointer;
+      display: flex; align-items: center; gap: .5rem;
       backdrop-filter: blur(10px); transition: border-color .3s, color .3s;
       position: relative; z-index: 201;
+      min-width: 80px; min-height: 40px;
     }
     .lang-toggle:hover { border-color: rgba(126,184,247,.8); color: #fff; }
     .lang-dropdown {
@@ -257,24 +258,6 @@
 
   <div class="corner tl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
   <div class="corner tr"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
-  <!-- Language selector -->
-  <div class="lang-wrap" id="lang-wrap">
-    <button class="lang-toggle" onclick="toggleLangMenu()">
-      <span id="lang-current-flag">🇬🇧</span>
-      <span id="lang-current-label">EN</span>
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-    </button>
-    <div class="lang-dropdown" id="lang-dropdown" style="display:none">
-      <button class="lang-opt lang-active" data-lang="en" onclick="pickLang('en','🇬🇧','EN')">🇬🇧 EN</button>
-      <button class="lang-opt" data-lang="de"  onclick="pickLang('de','🇩🇪','DE')">🇩🇪 DE</button>
-      <button class="lang-opt" data-lang="fr"  onclick="pickLang('fr','🇫🇷','FR')">🇫🇷 FR</button>
-      <button class="lang-opt" data-lang="es"  onclick="pickLang('es','🇪🇸','ES')">🇪🇸 ES</button>
-      <button class="lang-opt" data-lang="it"  onclick="pickLang('it','🇮🇹','IT')">🇮🇹 IT</button>
-      <button class="lang-opt" data-lang="ja"  onclick="pickLang('ja','🇯🇵','JA')">🇯🇵 JA</button>
-      <button class="lang-opt" data-lang="zh"  onclick="pickLang('zh','🇨🇳','ZH')">🇨🇳 ZH</button>
-      <button class="lang-opt" data-lang="el"  onclick="pickLang('el','🇬🇷','EL')">🇬🇷 EL</button>
-    </div>
-  </div>
   <div class="corner bl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
 
@@ -662,11 +645,13 @@ const LANGS = {
 let currentLang = 'en';
 
 let langMenuOpen = false;
-function toggleLangMenu() {
+function toggleLangMenu(event) {
+  if (event) event.stopPropagation();
   langMenuOpen = !langMenuOpen;
   document.getElementById('lang-dropdown').style.display = langMenuOpen ? 'flex' : 'none';
 }
-function pickLang(code, flag, label) {
+function pickLang(code, flag, label, event) {
+  if (event) event.stopPropagation();
   document.getElementById('lang-current-flag').textContent = flag;
   document.getElementById('lang-current-label').textContent = label;
   langMenuOpen = false;
@@ -836,7 +821,11 @@ function unlockAudio() {
   document.removeEventListener('click', unlockAudio);
 }
 document.addEventListener('touchstart', unlockAudio, { once: true });
-document.addEventListener('click', unlockAudio, { once: true });
+// Don't use 'click' for unlock — it conflicts with dropdown on desktop
+// Instead unlock on any button interaction
+document.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', unlockAudio, { once: true });
+});
 
 // Kept for compatibility — AR open/close just let the same audio keep playing
 function startHeartbeat() {}
