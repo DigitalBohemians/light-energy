@@ -99,12 +99,12 @@
     #affirmation.hidden    { opacity:0; transform:translateY(12px); }
     .divider2 { width:1px; height:48px; background:linear-gradient(to bottom,transparent,rgba(100,160,255,.6),transparent); margin:2.5rem auto 2rem; opacity:0; animation:fadeUp 1.8s ease .7s forwards; }
 
-    .btn-row { display:flex; gap:1rem; align-items:center; opacity:0; animation:fadeUp 1.8s ease 1s forwards; flex-wrap:wrap; justify-content:center; }
+    .btn-row { display:flex; flex-direction:column; gap:0.75rem; align-items:center; opacity:0; animation:fadeUp 1.8s ease 1s forwards; width:100%; max-width:320px; margin:0 auto; }
     .tap-btn {
       background:none; border:1px solid rgba(255,255,255,.35); color:#ffffff;
       font-family:'Inter',sans-serif; font-size:clamp(.55rem,1.8vw,.72rem); font-weight:300;
       letter-spacing:.3em; text-transform:uppercase; padding:.9rem 2.4rem;
-      cursor:pointer; transition:background .4s,border-color .4s,color .4s;
+      cursor:pointer; transition:background .4s,border-color .4s,color .4s; width:100%; justify-content:center;
     }
     .tap-btn:hover,.tap-btn:active { background:rgba(255,255,255,.1); border-color:#fff; color:#ffffff; }
     .ar-btn {
@@ -112,7 +112,7 @@
       font-family:'Inter',sans-serif; font-size:clamp(.55rem,1.8vw,.72rem); font-weight:300;
       letter-spacing:.2em; text-transform:uppercase; padding:.9rem 1.4rem;
       cursor:pointer; transition:background .4s,border-color .4s,color .4s;
-      display:flex; align-items:center; gap:.6rem;
+      display:flex; align-items:center; gap:.6rem; width:100%; justify-content:center;
     }
     .ar-btn:hover,.ar-btn:active { background:rgba(255,255,255,.1); border-color:#fff; color:#ffffff; }
     .ar-btn svg { width:18px; height:18px; flex-shrink:0; }
@@ -258,6 +258,24 @@
 
   <div class="corner tl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
   <div class="corner tr"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
+  <!-- Language selector -->
+  <div class="lang-wrap" id="lang-wrap">
+    <button class="lang-toggle" onclick="toggleLangMenu(event)">
+      <span id="lang-current-flag">🇬🇧</span>
+      <span id="lang-current-label">EN</span>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="lang-dropdown" id="lang-dropdown" style="display:none">
+      <button class="lang-opt lang-active" data-lang="en" onclick=\"pickLang('en','🇬🇧','EN',event)\">🇬🇧 EN</button>
+      <button class="lang-opt" data-lang="de"  onclick=\"pickLang('de','🇩🇪','DE',event)\">🇩🇪 DE</button>
+      <button class="lang-opt" data-lang="fr"  onclick=\"pickLang('fr','🇫🇷','FR',event)\">🇫🇷 FR</button>
+      <button class="lang-opt" data-lang="es"  onclick=\"pickLang('es','🇪🇸','ES',event)\">🇪🇸 ES</button>
+      <button class="lang-opt" data-lang="it"  onclick=\"pickLang('it','🇮🇹','IT',event)\">🇮🇹 IT</button>
+      <button class="lang-opt" data-lang="ja"  onclick=\"pickLang('ja','🇯🇵','JA',event)\">🇯🇵 JA</button>
+      <button class="lang-opt" data-lang="zh"  onclick=\"pickLang('zh','🇨🇳','ZH',event)\">🇨🇳 ZH</button>
+      <button class="lang-opt" data-lang="el"  onclick=\"pickLang('el','🇬🇷','EL',event)\">🇬🇷 EL</button>
+    </div>
+  </div>
   <div class="corner bl"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
   <div class="corner br"><svg viewBox="0 0 40 40" fill="none"><path d="M2 38L2 2L38 2" stroke="#7eb8f7" stroke-width=".8"/><path d="M2 12L12 2" stroke="#7eb8f7" stroke-width=".5" opacity=".5"/></svg></div>
 
@@ -840,6 +858,7 @@ function openAR() {
   document.getElementById('view-affirmation').classList.add('hidden');
   document.getElementById('view-ar').classList.remove('hidden');
   startHeartbeat();
+  startCamera(); // start immediately, show permission screen only if needed
 }
 
 function closeAR() {
